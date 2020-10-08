@@ -11,7 +11,9 @@ Some code snippets I often use in ImageJ macros
 - [x] Radial line profiles: create "star" of lines (360° around specified line)
 - [ ] Stackreg / Multistackreg batch
 - [ ] normalize histogram batch
+- [x] EzColoc_SemiManual.ijm: Macro version of EzColoc plugin (https://github.com/DrHanLim/EzColocalization) on manually selected cells (with some basic ROI-refinement) 
 
 
 ## R
 - [x] Randomize_folder.R: copies and renames files in a folder & creates a lookup table for unblinding
+- [x] First_look_at_results.R: loads all results files in a folder, does some basic data cleaning and visualization
