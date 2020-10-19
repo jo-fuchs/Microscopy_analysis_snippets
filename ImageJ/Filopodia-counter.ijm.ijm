@@ -7,45 +7,57 @@
 //   - Filopodia-detection threshold
 //
 //
-// v0.1 19.10.2020 Joachim Fuchs
+// v0.2 19.10.2020 Joachim Fuchs
 //
 
+// set up results
+run("Input/Output...", "jpeg=100 gif=-1 file=.csv save_column");
+run("Set Measurements...", "area mean standard median display redirect=None decimal=2");
+
 path = getDirectory("image");
+dirimg = path + "Filopodia/";
+File.makeDirectory(dirimg); 
 imgName = getTitle();
 Channel = getValue("Ch");
 run("Line Width...", "line="+5); 
 run("Select None");
 roiManager("deselect");
 
+
+// refine cell ROI
 run("Duplicate...", "duplicate");
 roiManager("Select", 0);
 rName = Roi.getName;
 run("Median...", "radius=2 slice");
-setAutoThreshold("Huang dark");
-//run("Analyze Particles...", "size=200-Infinity clear add slice");
+setAutoThreshold("Huang");
 run("Analyze Particles...", "size=200-Infinity clear include add slice");
 close();
 roiManager("Select", 0);
 
-// remove some long thin processes
-run("Enlarge...", "enlarge=-1");
 
-run("Enlarge...", "enlarge=2.5");
+// remove some long thin processes, enlarge by 1 µm
+run("Enlarge...", "enlarge=-1");
+run("Enlarge...", "enlarge=2");
+	// remove unconnected parts & fill holes
+	run("Create Mask");
+	run("Analyze Particles...", "size=200-Infinity include add");
+	run("Close");
+	roiManager("Select", 1);
 
 run("Area to Line");
 roiManager("add");
-roiManager("Select", 1);
+roiManager("Select", 2);
 Length = getValue("Length");
-//Stack.setChannel(4);
+
 /// have an adaptable threshold depending on intensities of the lines
 roiManager("measure");
-intens = getResult("Mean", 0);
-
+selectWindow(imgName);
+intens = getResult("Median", 0);
 
 
 run("Plot Profile");
-
-run("Find Peaks", "min._peak_amplitude=" + intens + " min._peak_distance=0 min._value=NaN max._value=0 exclude list");
+run("Find Peaks", "min._peak_amplitude=" + intens + 
+	" min._peak_distance=1.5 min._value=NaN max._value=0 exclude list");
 
 //Get number of maxima
 selectWindow("Plot Values");
@@ -63,14 +75,14 @@ setResult("Length", 0, Length);
 setResult("FiloNumber", 0, Filos); 
 setResult("FiloDensity", 0, dens); 
 
-saveAs("Results", path + imgName+ rName + "_Filopodia.csv");
+saveAs("Results", dirimg + imgName+ rName + "_Filopodia.csv");
 
 
 //Clear
 // clean up
 run("Close All");
 roiManager("Deselect");
-roiManager("Save", path + imgName + rName + ".zip");
+roiManager("Save", dirimg + imgName + rName + ".zip");
 roiManager("Delete");
 
 list = getList("window.titles");
