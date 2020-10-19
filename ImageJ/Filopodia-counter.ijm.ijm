@@ -1,5 +1,5 @@
 // Counts Filopodia around a cell
-//    as intensity maxima on a line 1 Âµm outside of cell mask
+//    as intensity maxima on a line 1 µm outside of cell mask
 //
 // on Max-Projections, make sure to exclude long thin processes
 // Calibration points:

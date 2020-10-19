@@ -12,6 +12,7 @@ Some code snippets I often use in ImageJ macros
 - [ ] Stackreg / Multistackreg batch
 - [ ] normalize histogram batch
 - [x] EzColoc_SemiManual.ijm: Macro version of EzColoc plugin (https://github.com/DrHanLim/EzColocalization) on manually selected cells (with some basic ROI-refinement) 
+- [x] Filopodia counter: Counts Filopodia around a cell as intensity maxima on a line 1 µm outside of cell mask
 
 
 ## R
