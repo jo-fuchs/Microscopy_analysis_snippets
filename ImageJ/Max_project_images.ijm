@@ -1,10 +1,10 @@
 // max projections of all open confocal stacks (names from Leica file format .lif)
 // saved in subdirectory with title of confocal-session
 path = getDirectory("Choose a Directory");
-dir.title = getTitle();
-dir.dotIndex = indexOf(dir.title, ".lif");
-dir.title2 = substring(dir.title,0, dir.dotIndex)
-dirimg=path+"//"+dir.title2+"//";
+dir_title = getTitle();
+dir_dotIndex = indexOf(dir_title, ".lif");
+dir_title2 = substring(dir_title,0, dir_dotIndex)
+dirimg=path+"//"+dir_title2+"//";
 File.makeDirectory(dirimg); 
 
 while (nImages>0) {
