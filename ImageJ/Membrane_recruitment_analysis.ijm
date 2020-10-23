@@ -41,7 +41,6 @@ Stack.getPosition(channel, slice, frame)
 run("Enlarge...", "enlarge=-1.2");
 run("Make Band...", "band=1");
 roiManager("add");
-roiManager( "Rename", "Plasma membrane" )
 roiManager("Deselect");
 
 
@@ -49,10 +48,17 @@ roiManager("Deselect");
 run("Select None");
 roiManager("Select", 0);
 run("Enlarge...", "enlarge=-3");
+	// Secure against unconnected ROIs remove unconnected parts & fill holes
+	run("Create Mask");
+	run("Analyze Particles...", "size=100-Infinity include add");
+	run("Close");
+	
+roiManager("Select", 2);
 run("Make Band...", "band=1");
 roiManager("add");
-roiManager("Deselect");
 
+roiManager("Select", 2);
+roiManager("delete");
 
 // perinuclear selection
 run("Select None");
@@ -62,38 +68,54 @@ Stack.setPosition(2, slice, frame)  // Dapi channel
 run("Median...", "radius=2 slice");
 setAutoThreshold("Moments dark");
 run("Analyze Particles...", "size=70-Infinity add include slice");
-// This fails for multiple nuclei
 
+// This fails for multiple nuclei > merge multiple nuclei before
+n = roiManager("Count");
+a = Array.getSequence(n);
+a = Array.slice(a,3,n);
+if(a.length > 1) { // only if multiple nuclei
+	roiManager("select", a);
+	roiManager("Combine");
+	run("Convex Hull");
+	roiManager("add");
+	
+	//remove individual ROIs
+	roiManager("select", a);
+	roiManager("delete");
+}
+
+// create band around nuclei
 roiManager("Select", 3);
 run("Enlarge...", "enlarge=-1");
 run("Make Band...", "band=1");
 roiManager("add");
-close();
-
-
-// remove cell Mask
-roiManager("Select", 0);
-roiManager("delete");
-// remove nucleus mask
+// remove nucleus area
 roiManager("Select", 2);
 roiManager("delete");
+close(); // duplicated image
+
+
+// keep cell area as a cell-defining ID
+//roiManager("Select", 0);
+//roiManager("delete");
+
 
 // Measure all
-roiManager("Select", 0);
+roiManager("Select", 1);
 roiManager( "Rename", "Membrane" )
 Stack.setPosition(1, slice, frame)
 run("Measure");
 Stack.setPosition(3, slice, frame)
 run("Measure");
 
-roiManager("Select", 1);
+roiManager("Select", 2);
 roiManager( "Rename", "Intracellular" )
 Stack.setPosition(1, slice, frame)
 run("Measure");
 Stack.setPosition(3, slice, frame)
 run("Measure");
 
-roiManager("Select", 2);
+roiManager("Select", 3);
 roiManager( "Rename", "Perinuclear" )
 Stack.setPosition(1, slice, frame)
 run("Measure");
