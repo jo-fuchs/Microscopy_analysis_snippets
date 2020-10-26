@@ -1,5 +1,5 @@
 // Counts Filopodia around a cell
-//    as intensity maxima on a line 1 µm outside of cell mask
+//    as intensity maxima on a line 1 ï¿½m outside of cell mask
 //
 // on Max-Projections, make sure to exclude long thin processes
 // Calibration points:
@@ -15,7 +15,7 @@ run("Input/Output...", "jpeg=100 gif=-1 file=.csv save_column");
 run("Set Measurements...", "area mean standard median display redirect=None decimal=2");
 
 path = getDirectory("image");
-dirimg = path + "Filopodia/";
+dirimg = path + "Measurements/";
 File.makeDirectory(dirimg); 
 imgName = getTitle();
 Channel = getValue("Ch");
@@ -29,13 +29,14 @@ run("Duplicate...", "duplicate");
 roiManager("Select", 0);
 rName = Roi.getName;
 run("Median...", "radius=2 slice");
-setAutoThreshold("Huang");
+setAutoThreshold("Huang dark");
 run("Analyze Particles...", "size=200-Infinity clear include add slice");
 close();
 roiManager("Select", 0);
+cell_surface = getValue("Area");
 
 
-// remove some long thin processes, enlarge by 1 µm
+// remove some long thin processes, enlarge by 1 ï¿½m
 run("Enlarge...", "enlarge=-1");
 run("Enlarge...", "enlarge=2");
 	// remove unconnected parts & fill holes
@@ -71,11 +72,13 @@ dens = Filos / Length;
 run("Clear Results");
 setResult("Image", 0, imgName);
 setResult("Channel", 0, Channel);
+setResult("Area", 0, cell_surface);
 setResult("Length", 0, Length);
 setResult("FiloNumber", 0, Filos); 
 setResult("FiloDensity", 0, dens); 
 
-saveAs("Results", dirimg + imgName+ rName + "_Filopodia.csv");
+
+saveAs("Results", dirimg + imgName + "_" + rName + "_Filopodia.csv");
 
 
 //Clear
