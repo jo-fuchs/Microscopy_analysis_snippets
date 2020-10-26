@@ -1,24 +1,34 @@
 // Plasma membrane recruitment analysis
 // 
-//  Measures intensity at cell surface, intracellular & perinuclear
+//	  	Measures intensity at cell surface, intracellular & perinuclear
+//		creates 1µm thick band to measure intensity (mean & median) in all regions
 //    
-// requires manual selection of cell of interest on single z-Planes, 
-// requires membrane marker (fGFP or F-actin) and Dapi
-//    creates 1µm thick band to measure intensity (mean & median)
-//    ROIs saved as Image_ROI.zip
-//    Intensities saved as Image_ROI.csv
+// requires:
+//		membrane marker (fGFP or F-actin) optionally with Dapi (for perinuclear intensity)
+//		manual selection of cell of interest in ROI-manager
 //
-// Settings to be adjusted:
-//    Membrane marker channel, Dapi channel 
+// Output:
+//    ROIs saved as Image_ROIname_ROIs.zip
+//    Intensities saved as Image_ROIname_PMrecruitment.csv
 //
-// v0.1 22.10.2020 Joachim Fuchs
+// v0.2 26.10.2020 Joachim Fuchs
 //
+
+
+
+// define channels
+GFPchannel = 1;
+PRG2channel = 4;
+Dapichannel = 3; // if no Dapi imaged, set to 0
+
 
 
 // set up results
 run("Input/Output...", "jpeg=100 gif=-1 file=.csv save_column");
 run("Set Measurements...", "area mean standard median display redirect=None decimal=2");
 path = getDirectory("Choose a Directory");
+dirimg = path + "Measurements/";
+File.makeDirectory(dirimg); 
 imgName = getTitle();
 Stack.getPosition(channel, slice, frame)
 run("Select None");
@@ -29,7 +39,7 @@ roiManager("deselect");
 run("Duplicate...", "duplicate");
 roiManager("Select", 0);
 ROIname = getInfo("roi.name"); 
-Stack.setPosition(1, slice, frame)  // best case set: Actin channel
+Stack.setPosition(GFPchannel, slice, frame)  
 run("Median...", "radius=2 slice");
 setAutoThreshold("Huang dark");
 run("Analyze Particles...", "size=200-Infinity clear include add slice");
@@ -37,7 +47,7 @@ close();
 
 // Plasma membrane Selection
 roiManager("Select", 0);
-Stack.getPosition(channel, slice, frame)
+Stack.setPosition(GFPchannel, slice, frame)
 run("Enlarge...", "enlarge=-1.2");
 run("Make Band...", "band=1");
 roiManager("add");
@@ -60,28 +70,30 @@ roiManager("add");
 roiManager("Select", 2);
 roiManager("delete");
 
-// perinuclear selection
-run("Select None");
-run("Duplicate...", "duplicate");
-roiManager("Select", 0);
-Stack.setPosition(2, slice, frame)  // Dapi channel
-run("Median...", "radius=2 slice");
-setAutoThreshold("Moments dark");
-run("Analyze Particles...", "size=70-Infinity add include slice");
-
-// This fails for multiple nuclei > merge multiple nuclei before
-n = roiManager("Count");
-a = Array.getSequence(n);
-a = Array.slice(a,3,n);
-if(a.length > 1) { // only if multiple nuclei
-	roiManager("select", a);
-	roiManager("Combine");
-	run("Convex Hull");
-	roiManager("add");
+if(Dapichannel != 0) {
+	// perinuclear selection
+	run("Select None");
+	run("Duplicate...", "duplicate");
+	roiManager("Select", 0);
+	Stack.setPosition(Dapichannel, slice, frame)  
+	run("Median...", "radius=2 slice");
+	setAutoThreshold("Moments dark");
+	run("Analyze Particles...", "size=70-Infinity add include slice");
 	
-	//remove individual ROIs
-	roiManager("select", a);
-	roiManager("delete");
+	// This fails for multiple nuclei > merge multiple nuclei before
+	n = roiManager("Count");
+	a = Array.getSequence(n);
+	a = Array.slice(a,3,n);
+	if(a.length > 1) { // only if multiple nuclei
+		roiManager("select", a);
+		roiManager("Combine");
+		run("Convex Hull");
+		roiManager("add");
+		
+		//remove individual ROIs
+		roiManager("select", a);
+		roiManager("delete");
+	}
 }
 
 // create band around nuclei
@@ -90,7 +102,7 @@ run("Enlarge...", "enlarge=-1");
 run("Make Band...", "band=1");
 roiManager("add");
 // remove nucleus area
-roiManager("Select", 2);
+roiManager("Select", 3);
 roiManager("delete");
 close(); // duplicated image
 
@@ -103,31 +115,32 @@ close(); // duplicated image
 // Measure all
 roiManager("Select", 1);
 roiManager( "Rename", "Membrane" )
-Stack.setPosition(1, slice, frame)
+Stack.setPosition(GFPchannel, slice, frame)
 run("Measure");
-Stack.setPosition(3, slice, frame)
+Stack.setPosition(PRG2channel, slice, frame)
 run("Measure");
 
 roiManager("Select", 2);
 roiManager( "Rename", "Intracellular" )
-Stack.setPosition(1, slice, frame)
+Stack.setPosition(GFPchannel, slice, frame)
 run("Measure");
-Stack.setPosition(3, slice, frame)
+Stack.setPosition(PRG2channel, slice, frame)
 run("Measure");
 
+if(Dapichannel != 0) {
 roiManager("Select", 3);
 roiManager( "Rename", "Perinuclear" )
-Stack.setPosition(1, slice, frame)
+Stack.setPosition(GFPchannel, slice, frame)
 run("Measure");
-Stack.setPosition(3, slice, frame)
+Stack.setPosition(PRG2channel, slice, frame)
 run("Measure");
-
+}
 
 // save results
 roiManager("Deselect");
-roiManager("Save", path + imgName + "_" + ROIname +".zip");
+roiManager("Save", dirimg + imgName + "_" + ROIname +"_ROIs.zip");
 
-saveAs("Results", path + imgName + "_" + ROIname + ".csv");
+saveAs("Results", dirimg + imgName + "_" + ROIname + "_PMrecruitment.csv");
 
 // close stuff
 // clean up
