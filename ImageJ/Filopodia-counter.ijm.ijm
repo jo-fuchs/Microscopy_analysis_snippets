@@ -33,8 +33,10 @@ setAutoThreshold("Huang dark");
 run("Analyze Particles...", "size=200-Infinity clear include add slice");
 close();
 roiManager("Select", 0);
-cell_surface = getValue("Area");
-
+Stack.setChannel(4);
+cell_surface = getValue("Area");
+mean_intensity = getValue("Mean");
+Stack.setChannel(1);
 
 // remove some long thin processes, enlarge by 1 �m
 run("Enlarge...", "enlarge=-1");
@@ -73,6 +75,7 @@ run("Clear Results");
 setResult("Image", 0, imgName);
 setResult("Channel", 0, Channel);
 setResult("Area", 0, cell_surface);
+setResult("MeanIntensity", 0, mean_intensity);
 setResult("Length", 0, Length);
 setResult("FiloNumber", 0, Filos); 
 setResult("FiloDensity", 0, dens); 
