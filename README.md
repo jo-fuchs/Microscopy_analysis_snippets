@@ -10,6 +10,7 @@ Some code snippets I often use in ImageJ macros
 - [x] **Selection refinements in masks**: Automatic or manual threshold, +/- mask refinement
 - [x] **Save line profiles**: several channels as a column including one for X-axis in µm
 - [x] **Radial line profiles**: create "star" of lines (360° around specified line)
+- [x] **Accumulations per area**: Count intensity peaks per area (PH-domain accumulations in axon)
 - [ ] Stackreg / Multistackreg batch
 - [ ] normalize histogram batch
 - [x] **EzColoc_SemiManual.ijm**: Macro version of EzColoc plugin (https://github.com/DrHanLim/EzColocalization) on manually selected cells (with some basic ROI-refinement) 
